@@ -107,7 +107,7 @@ class YerIstasyonu(QMainWindow):
         sag_panel = QVBoxLayout()
         harita = folium.Map(location=[40.98, 29.13], zoom_start=7)
         folium.Marker(location=[40.98, 29.13]).add_to(harita)
-        harita_path = "harita.html"
+        harita_path = "map/map.html"
         harita.save(harita_path)
         self.map_view = QWebEngineView()
         self.map_view.load(QUrl.fromLocalFile(os.path.abspath(harita_path)))
