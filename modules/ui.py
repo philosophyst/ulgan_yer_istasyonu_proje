@@ -1,62 +1,16 @@
-import sys
-import csv
-import time
-import folium
-import os
 from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QLabel, QPushButton, QVBoxLayout,
-    QHBoxLayout, QGridLayout, QWidget, QComboBox, QTextEdit, QTabWidget
+    QMainWindow, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
+    QGridLayout, QWidget, QComboBox, QTextEdit, QTabWidget
 )
 from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtChart import QChart, QChartView, QLineSeries, QValueAxis
-from PyQt5.QtCore import Qt, QThread, pyqtSignal, QUrl
+from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtWebEngineWidgets import QWebEngineView
+import folium
+import os
 
-
-class VeriOkuyucuThread(QThread):
-    veri_okundu = pyqtSignal(float, float, float, float, int)
-
-    def run(self):
-        with open("data/telemetry_data.csv", "r", encoding="utf-8") as dosya:
-            reader = csv.reader(dosya)
-            next(reader)
-            sayac = 0
-            for satir in reader:
-                temp = float(satir[3])
-                alt = float(satir[4])
-                press = float(satir[5])
-                volt = float(satir[6])
-                self.veri_okundu.emit(temp, alt, press, volt, sayac)
-                time.sleep(1)
-                sayac += 1
-
-
-class KomutIsleyici:
-    def __init__(self):
-        self.komutlar = {
-            "RESET": "Roket yönü sıfırlandı.",
-            "BAGLANTI": "Bağlantı sağlandı.",
-            "TEST": "Test komutu çalıştı.",
-            "DURUM": "Sistem durumu iyi.",
-            "ISIK": "LED ışığı açıldı.",
-            "KAMERA": "Kamera başlatıldı.",
-            "GPS": "GPS verisi alınıyor.",
-            "BASLAT": "Görev başlatıldı.",
-            "DUR": "Görev durduruldu.",
-            "YENIDEN": "Yeniden başlatılıyor."
-        }
-
-    def isle(self, komut):
-        sonuc = []
-        parcali = komut.upper().split(",")
-        for k in parcali:
-            k = k.strip()
-            if k in self.komutlar:
-                sonuc.append(f"[OK] {k} → {self.komutlar[k]}")
-            else:
-                sonuc.append(f"[ERR] {k} tanınmadı.")
-        return "\n".join(sonuc)
-
+from modules.veriokuyucu import VeriOkuyucuThread
+from modules.komutisleyici import KomutIsleyici
 
 class YerIstasyonu(QMainWindow):
     def __init__(self):
@@ -77,11 +31,14 @@ class YerIstasyonu(QMainWindow):
     def init_ui(self):
         self.tabs = QTabWidget()
 
-        # ============ Charts Sekmesi ===============
         charts_tab = QWidget()
         charts_layout = QVBoxLayout()
-
         header_layout = QHBoxLayout()
+
+        logo = QLabel()
+        logo.setPixmap(QPixmap("icons/img.png").scaled(40, 40, Qt.KeepAspectRatio))
+        header_layout.addWidget(logo)
+
         self.label_mod = QLabel("Mod: S")
         self.label_rotation = QLabel("Rotation Rate: 1.1")
         self.label_packet = QLabel("Packet Count: 0")
@@ -112,6 +69,7 @@ class YerIstasyonu(QMainWindow):
         self.map_view = QWebEngineView()
         self.map_view.load(QUrl.fromLocalFile(os.path.abspath(harita_path)))
         self.map_view.setMinimumHeight(300)
+
         roket = QLabel()
         roket.setPixmap(QPixmap("assets/img.png").scaled(150, 300, Qt.KeepAspectRatio))
         roket.setAlignment(Qt.AlignCenter)
@@ -126,7 +84,6 @@ class YerIstasyonu(QMainWindow):
         charts_layout.addLayout(grafik_ve_harita)
         charts_tab.setLayout(charts_layout)
 
-        # ============ Telemetry Sekmesi ===============
         telemetry_tab = QWidget()
         telemetry_layout = QVBoxLayout()
         self.label_temp = QLabel("Temperature:")
@@ -142,7 +99,6 @@ class YerIstasyonu(QMainWindow):
         telemetry_layout.addWidget(self.telemetry_log)
         telemetry_tab.setLayout(telemetry_layout)
 
-        # ============ Console Sekmesi ===============
         console_tab = QWidget()
         console_layout = QVBoxLayout()
         self.console_input = QComboBox()
@@ -157,7 +113,6 @@ class YerIstasyonu(QMainWindow):
         console_layout.addWidget(self.console_output)
         console_tab.setLayout(console_layout)
 
-        # Sekmeleri ekle
         self.tabs.addTab(charts_tab, "Charts")
         self.tabs.addTab(telemetry_tab, "Telemetry")
         self.tabs.addTab(console_tab, "Console")
@@ -170,7 +125,7 @@ class YerIstasyonu(QMainWindow):
         chart.legend().hide()
         y_axis = QValueAxis()
         y_axis.setLabelFormat("%.2f")
-        y_axis.setRange(0, 100)
+        y_axis.setRange(0, 2000)
         chart.setAxisY(y_axis, seri)
         x_axis = QValueAxis()
         x_axis.setLabelFormat("%d")
@@ -203,10 +158,3 @@ class YerIstasyonu(QMainWindow):
         komut = self.console_input.currentText()
         yanit = self.komut_isleyici.isle(komut)
         self.console_output.append(f"> {komut}\n{yanit}\n")
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    pencere = YerIstasyonu()
-    pencere.show()
-    sys.exit(app.exec_())

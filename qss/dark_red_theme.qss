@@ -1,33 +1,45 @@
-
 QMainWindow {
-    background-color: #1a0000;
-    color: #f2f2f2;
+    background-color: #1A0000;
+    color: white;
 }
 
-QLabel, QComboBox, QLineEdit {
-    color: #f2f2f2;
-    background-color: #330000;
-    border: 1px solid #660000;
-    padding: 4px;
+QLabel {
+    color: #FFFFFF;
+    font-size: 14px;
 }
 
 QPushButton {
-    background-color: #800000;
+    background-color: #B22222;
     color: white;
-    border: 1px solid #b30000;
-    border-radius: 4px;
+    border: 1px solid #990000;
     padding: 6px;
+    border-radius: 6px;
 }
 
 QPushButton:hover {
-    background-color: #b30000;
+    background-color: #CC3333;
 }
 
-QFrame {
-    background-color: #1a0000;
-    border: none;
+QComboBox, QTextEdit, QLineEdit {
+    background-color: #330000;
+    color: #FFFFFF;
+    border: 1px solid #800000;
+    border-radius: 4px;
+    padding: 4px;
 }
 
-QChartView {
-    background-color: #1a0000;
+QTabWidget::pane {
+    border: 1px solid #660000;
+}
+
+QTabBar::tab {
+    background: #550000;
+    color: white;
+    padding: 6px;
+    border-radius: 4px;
+}
+
+QTabBar::tab:selected {
+    background: #AA0000;
+    font-weight: bold;
 }
